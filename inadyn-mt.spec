@@ -26,7 +26,7 @@ is running INADYN-MT.
 
 Before using inadyn-mt for the first time you must use the DynDNS
 provider's web interface to create the entry for the hostname. You
-should then fill in /etc/inadyn.conf with the appropriate detail
+should then fill in /etc/inadyn-mt.conf with the appropriate detail
 
 %prep
 %setup -q -n %name.v.0%{version}
