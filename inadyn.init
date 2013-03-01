@@ -1,0 +1,90 @@
+#!/bin/sh
+#
+# inadyn-mt     Starts and stops the inadyn daemon
+#
+# chkconfig: - 55 45
+#
+# processname: inadyn
+# description: Check and update your IP to dynamic DNS Server.
+# pidfile: /var/run/inadyn/inadyn.pid 
+# config: /etc/inadyn-mt.conf
+
+### BEGIN INIT INFO
+# Provides: inadyn
+# Required-Start: $networks
+# Required-Stop:
+# Default-Stop: 0 6
+# Short-Description: Sending the IP-Address to a DynDNS
+# Description: Sending the IP-Address to a DynDNS
+### END INIT INFO
+
+ina_config=/etc/inadyn-mt.conf
+ina_bin=/usr/sbin/inadyn
+ina_pid=/var/run/inadyn.pid
+
+# Make sure relevant files exist
+[ -x "$ina_bin" -a -s "$ina_config" ] || exit 0
+
+# Source function library.
+. /etc/rc.d/init.d/functions
+
+# Source networking configuration.
+. /etc/sysconfig/network
+
+# Check that networking is up.
+[ "$NETWORKING" = "no" ] && exit 0
+
+RETVAL=0
+prog=inadyn
+
+start() {
+    # Start daemons.
+    echo -n $"Starting $prog: "
+    daemon $ina_bin --input_file $ina_config
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && touch /var/lock/subsys/$prog
+}
+
+stop() {
+    # Stop daemons.
+    echo -n $"Shutting down $prog: "
+    killproc $prog -QUIT
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && rm -f /var/lock/subsys/$prog && rm -f $ina_pid
+}
+
+restart() {
+    stop
+    start
+    RETVAL=$?
+}
+
+# See how we were called.
+case "$1" in
+  start)
+    start
+    ;;
+  stop)
+    stop
+    ;;
+  restart)
+    restart
+    ;;
+
+  reload)
+    restart
+    ;;
+  condrestart)
+    [ -e /var/lock/subsys/$prog ] && restart || :
+    ;;
+  status)
+    status $prog
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|condrestart|status}"
+    exit 1
+esac
+
+exit $RETVAL
